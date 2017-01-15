@@ -1,14 +1,32 @@
-// jshint esversion: 6
-
+const methodOverride = require('method-override');
 const express = require('express');
 const handlebars = require('express-handlebars');
 const bodyparser = require('body-parser');
+const productRouter = require('./routes/products');
+const articleRouter = require('./routes/articles');
+const flash = require('connect-flash');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+
+
+
 let app = express();
-app.use(bodyparser.urlencoded());
-let data = {
-  'products': [
-  ]
-};
+app.use(cookieParser());
+app.use(session({secret: "something"}));
+
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+  res.locals.messages = require('express-messages')(req, res);
+  next();
+});
+
+
+
+app.use(methodOverride('_method'));
+app.use(bodyparser.urlencoded({extended: true}));
+app.use(bodyparser.json());
+let products = require('./db/products');
+let counter = 0;
 
 const hbs = handlebars.create(
   {
@@ -24,14 +42,7 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-app.post('/products', (req, res) => {
-  let newProduct = req.body;
-  if(newProduct.hasOwnProperty("name") && newProduct.hasOwnProperty("price") && newProduct.hasOwnProperty("inventory")){
-    newProduct.id = data.products.length;
-    data.products.push(newProduct);
-  }
-  console.log("products", data.products);
-  res.render('index', data);
-});
+app.use('/products', productRouter);
+app.use('/articles', articleRouter);
 
 module.exports = app;
