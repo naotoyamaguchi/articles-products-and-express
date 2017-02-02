@@ -21,17 +21,35 @@ function getSpecificArticle(reqId){
 }
 
 function putArticle(reqBody, reqId){
+  let urlEncodedTitle = encodeURI(reqBody.title);
+  let urlEncodedUrl = encodeURI(reqId);
+  console.log("reqBody --",reqBody);
+  console.log("reqId--", reqId);
+  console.log("urlEncodedTitle", urlEncodedTitle);
+  if(reqBody.author){  
+  db.one(`UPDATE articles SET author = '${reqBody.author}' WHERE title = '${reqId}'`);
+  }
   if(reqBody.title){
-    db.none(`UPDATE articles SET title = '${reqBody.title}' WHERE title = ${reqId}`);
+  db.one(`UPDATE articles SET title = '${reqBody.title}' WHERE title = '${reqId}'`);
+  db.one(`UPDATE articles SET urlTitle = '${urlEncodedTitle}' WHERE urlTitle = '${urlEncodedUrl}'`);
   }
-  if(reqBody.author){
-    db.none(`UPDATE articles SET author = '${reqBody.author}' WHERE title = ${reqId}`);
-  }
-  if(reqBody.body){
-    db.none(`UPDATE articles SET body = '${reqBody.body}' WHERE title = ${reqId}`);
-  }
-  console.log("reach me")
-  return db.one(`SELECT * FROM articles WHERE articles.title = '${reqId}'`);
+
+  return db.one(`SELECT * FROM articles WHERE articles.title = '${reqBody.title}'`);
+
+  // db.one(`UPDATE articles SET urltitle = `);
+  // console.log("reqbody------", reqBody);
+  // let urlEncodedReqId = encodeURI(reqId);
+  // if(reqBody.title){
+  //   db.one(`UPDATE articles SET title = '${reqBody.title}' WHERE urltitle = ${urlEncodedReqId}`);
+  // }
+  // // if(reqBody.author){
+  // //   db.one(`UPDATE articles SET author = '${reqBody.author}' WHERE title = '${reqId}'`);
+  // // }
+  // // if(reqBody.body){
+  // //   db.one(`UPDATE articles SET body = '${reqBody.body}' WHERE title = '${reqId}'`);
+  // // }
+  // console.log("reach me & reqId....", reqId);
+  // return db.query(`SELECT * FROM articles WHERE articles.title = ${reqId}`);
 }
 
 function deleteItem(urlId){

@@ -31,7 +31,6 @@ router.get('/:title/edit', (req, res) => {
   let encodedTitle = encodeURI(req.params.title);
   articles.getSpecificArticle(encodedTitle)
   .then( result => {
-    console.log(result);
     res.render('article_edit', result);
   })
   .catch( err => console.error(err));
@@ -51,7 +50,7 @@ router.post('/', (req, res) => {
 router.put('/:title', (req, res) => {
   articles.putArticle(req.body, req.params.title)
   .then( result => {
-    console.log(result)
+    console.log("result--- ", result);
     res.redirect(303, `/articles/${result.urltitle}`);
   })
   .catch( err => console.error(err));
