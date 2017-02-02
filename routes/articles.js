@@ -6,43 +6,63 @@ router.use(bodyparser.json());
 let articles = require('../db/articles');
 
 router.get('/', (req, res) => {
-  res.render('tempArticleIndex', articles.db);
+  articles.getAllArticles()
+  .then( result => {
+    console.log(result);
+    res.render('tempArticleIndex', {data: result});
+  })
+  .catch(err => console.error(err));
 });
 
 router.get('/new', (req, res) => {
-  res.render('article_new');
+  res.render('article_new', {messages: res.locals.messages()});
 });
 
 router.get('/:title', (req, res) => {
-  res.render('article', articles.findItem(encodeURI(req.params.title)));
+  let encodedTitle = encodeURI(req.params.title);
+  articles.getSpecificArticle(encodedTitle)
+  .then( result => {
+    res.render('article', result);
+  })
+  .catch( err => console.error(err));
 });
 
 router.get('/:title/edit', (req, res) => {
-  res.render('article_edit', articles.findItem(encodeURI(req.params.title)));
+  let encodedTitle = encodeURI(req.params.title);
+  articles.getSpecificArticle(encodedTitle)
+  .then( result => {
+    console.log(result);
+    res.render('article_edit', result);
+  })
+  .catch( err => console.error(err));
 });
 
 
 
 router.post('/', (req, res) => {
-  articles.createItem(req.body);
-  res.redirect(303, '/articles');
+  //no validations rn
+  articles.postArticle(req.body)
+  .then( result => {
+    res.redirect(303, '/articles');
+  })
+  .catch( err => console.error(err));
 });
 
 router.put('/:title', (req, res) => {
-  console.log("req.params.title", req.params.title);
-  for(let i = 0; i < articles.db.data.length; i++){
-      if(articles.db.data[i].urlTitle == encodeURI(req.params.title)){
-        console.log(req.body);
-        articles.db.data[i].title = req.body.title;
-        articles.db.data[i].urlTitle = encodeURI(req.body.title);
-      }
-    }
-  res.redirect(303, `/articles/${req.body.title}`);
+  articles.putArticle(req.body, req.params.title)
+  .then( result => {
+    console.log(result)
+    res.redirect(303, `/articles/${result.urltitle}`);
+  })
+  .catch( err => console.error(err));
 });
 
 router.delete('/:title', (req, res) => {
-  articles.deleteItem(req.params.title);
-  res.redirect(303, '/articles');
+  articles.deleteItem(req.params.title)
+  .then( () => (
+  res.redirect(303, '/articles')  
+  ))
+  .catch(err => console.error(err));
 });
 
 

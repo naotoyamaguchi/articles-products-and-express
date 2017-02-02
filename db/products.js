@@ -1,33 +1,48 @@
-let db = {
-  "data": []
-};
+const PG_PASS = process.env.PG_PASS;
+const pgp = require('pg-promise')();
+const db = pgp({
+  host: 'localhost',
+  port: 5432,
+  database: 'products_articles',
+  user: 'postgres',
+  password: PG_PASS
+});
 
-let counter = 0;
-
-function createItem(object){
-
+function getAllProducts(){
+  return db.query(`SELECT * FROM products`);
 }
 
-function findItem(urlId){
-  for(let i = 0; i < db.data.length; i++){
-    if(db.data[i].id == urlId){
-      return db.data[i];
-    }
+function getSpecificProduct(reqId){
+  return db.one(`SELECT * FROM products WHERE products.id = ${reqId}`);
+}
+
+function postProduct(reqBody){
+  return db.none(`INSERT INTO products (name, price, inventory) VALUES ('${reqBody.name}', ${reqBody.price}, ${reqBody.inventory})`);
+}
+
+function putProduct(reqBody, reqId){
+  if(reqBody.name){
+    db.none(`UPDATE products SET name = '${reqBody.name}' WHERE ID = ${reqId}`);
   }
+  if(typeof(parseInt(reqBody.price)) === 'number' && !isNaN(parseInt(reqBody.price))){
+    db.none(`UPDATE products SET price = ${reqBody.price} WHERE ID = ${reqId}`);
+  }
+  if(typeof(parseInt(reqBody.inventory)) === 'number' && !isNaN(parseInt(reqBody.inventory))){
+    db.none(`UPDATE products SET inventory = ${reqBody.inventory} WHERE ID = ${reqId}`);
+  }
+  return db.one(`SELECT * FROM products WHERE products.id = ${reqId}`);
 }
+
 
 function deleteItem(urlId){
-  for(let i = 0; i < db.data.length; i++){
-    if(db.data[i].id == urlId){
-      db.data.splice(db.data.indexOf(db.data[i]), 1);
-    }
-  }
+  return db.none(`DELETE FROM products WHERE ID = ${urlId};`);
 }
 
 
 module.exports = {
-  db: db,
-  createItem: createItem,
-  findItem: findItem,
+  getAllProducts: getAllProducts,
+  getSpecificProduct: getSpecificProduct,
+  postProduct: postProduct,
+  putProduct: putProduct,
   deleteItem: deleteItem
 };
